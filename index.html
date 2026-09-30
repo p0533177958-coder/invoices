@@ -387,7 +387,8 @@ body[data-theme="light"] .date-field input{color-scheme:light}
 }
 .acct .av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:linear-gradient(135deg,var(--acc-1),var(--acc-2));color:var(--on-acc);flex:none}
 .acct .who{flex:1;min-width:0;font-size:14px;direction:ltr;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.acct button{border:none;background:none;color:var(--acc-1);font-weight:700;font-size:14px;padding:6px}
+.acct button{border:none;background:none;color:var(--acc-1);font-weight:700;font-size:14px;padding:6px;white-space:nowrap}
+.acct #logoutBtn{color:var(--muted)}
 
 .progress{height:10px;border-radius:99px;background:var(--surface-3);overflow:hidden;margin:18px 0 10px}
 .progress i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--acc-2),var(--acc-1));transition:width .3s ease}
@@ -836,15 +837,23 @@ function findAmount(text){
    ============================================================ */
 var token = null, userEmail = "";
 var RealApi = {
-  login: function(){
+  /* select=true: חלון בחירת חשבון (החלפת חשבון). חייב להיקרא ישירות מלחיצה, אחרת החלון נחסם */
+  login: function(select){
     return new Promise(function(resolve, reject){
       if(!window.google || !google.accounts || !google.accounts.oauth2){ reject(new Error("nogis")); return; }
+      var oldToken = token;
       var client = google.accounts.oauth2.initTokenClient({
-        client_id: CLIENT_ID, scope: SCOPE,
+        client_id: CLIENT_ID, scope: SCOPE, prompt: select ? "select_account" : "",
         callback: function(r){
           if(r.error){ reject(new Error(r.error)); return; }
           token = r.access_token;
-          gget("profile").then(function(p){ userEmail = p.emailAddress; resolve(userEmail); }, reject);
+          var exp = Date.now() + (+r.expires_in || 3600) * 1000;
+          gget("profile").then(function(p){
+            userEmail = p.emailAddress;
+            saveSession({ token: token, email: userEmail, exp: exp });
+            if(oldToken && oldToken !== token) try{ google.accounts.oauth2.revoke(oldToken, function(){}); }catch(e){}
+            resolve(userEmail);
+          }, reject);
         },
         error_callback: function(e){ reject(new Error(e && e.type || "popup")); }
       });
@@ -853,7 +862,14 @@ var RealApi = {
   },
   logout: function(){
     if(token && window.google) try{ google.accounts.oauth2.revoke(token, function(){}); }catch(e){}
-    token = null; userEmail = "";
+    token = null; userEmail = ""; saveSession(null);
+  },
+  /* חיבור שמור ועדיין בתוקף (עם מרווח של דקה)? מחזיר את המייל, אחרת null */
+  restore: function(){
+    var ss = loadSession();
+    if(!ss || !ss.token || !(ss.exp - 60000 > Date.now())){ saveSession(null); return null; }
+    token = ss.token; userEmail = ss.email || "";
+    return userEmail;
   },
   scan: async function(from, to, onProg, isCancelled){
     var after = from.replace(/-/g, "/");
@@ -938,12 +954,16 @@ function dedupe(items){
   return items;
 }
 /* גוגל מגבילה קצב. בקשה שנדחתה (429/5xx/רשת) מנוסה שוב עד 5 פעמים, עם המתנה הולכת וגדלה */
+/* ה-token נשמר בנפרד מההגדרות, ונמחק כשהוא פג או בהתנתקות */
+var SESSION_KEY = "invoices_session_v1";
+function loadSession(){ try{ return JSON.parse(localStorage.getItem(SESSION_KEY) || "null"); }catch(e){ return null; } }
+function saveSession(v){ try{ if(v) localStorage.setItem(SESSION_KEY, JSON.stringify(v)); else localStorage.removeItem(SESSION_KEY); }catch(e){} }
 async function gget(path){
   for(var attempt = 0; ; attempt++){
     var r = null;
     try{ r = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/" + path, { headers:{ Authorization:"Bearer " + token } }); }
     catch(e){ r = null; }
-    if(r && r.status === 401) throw new Error("expired");
+    if(r && r.status === 401){ saveSession(null); throw new Error("expired"); }
     if(r && r.ok) return r.json();
     var retry = !r || r.status === 429 || r.status === 403 || r.status >= 500;
     if(!retry || attempt >= 6) throw new Error("http" + (r ? r.status : 0));
@@ -1092,6 +1112,8 @@ $$(".sheet").forEach(function(sh){
    ============================================================ */
 $("#loginBtn").onclick = function(){
   $("#loginErr").classList.remove("on");
+  var saved = Api.restore && Api.restore();
+  if(saved){ userEmail = saved; push("s2"); return; }
   Api.login().then(function(email){
     userEmail = email;
     push("s2");
@@ -1563,7 +1585,20 @@ $("#doneOk").onclick = hideDone;
    ============================================================ */
 $("#settingsBtn").onclick = function(){
   $("#acctBox").innerHTML = userEmail ?
-    '<div class="acct"><div class="av">' + esc(userEmail.charAt(0).toUpperCase()) + '</div><div class="who">' + esc(userEmail) + '</div><button id="logoutBtn">התנתק</button></div>' : "";
+    '<div class="acct"><div class="av">' + esc(userEmail.charAt(0).toUpperCase()) + '</div><div class="who">' + esc(userEmail) + '</div><button id="switchBtn">החלף חשבון</button><button id="logoutBtn">התנתק</button></div>' : "";
+  var sb = $("#switchBtn");
+  if(sb) sb.onclick = function(){
+    Api.login(true).then(function(email){
+      var changed = email !== userEmail;
+      userEmail = email; ui.items = null;
+      closeSheets();
+      if(current() === "s1") push("s2"); else if(stack.length > 2) goToDepth(1, "back"); else updateBar(current());
+      toast(changed ? "עברת לחשבון " + email : "נשארת בחשבון " + email);
+    }, function(err){
+      var m = err && err.message || "";
+      if(m !== "popup_closed" && m !== "popup") toast(m === "access_denied" ? "החשבון הזה עוד לא נוסף לרשימת המשתמשים" : "החלפת החשבון נכשלה");
+    });
+  };
   var lb = $("#logoutBtn");
   if(lb) lb.onclick = function(){ Api.logout(); userEmail = ""; ui.items = null; closeSheets(); goToDepth(0, "back"); toast("התנתקת"); };
   renderThemes();
@@ -1575,6 +1610,7 @@ applyTheme(state.theme);
 setRange("lastMonth");
 history.replaceState({ depth:0 }, "");
 show("s1");
+(function(){ var saved = Api.restore && Api.restore(); if(saved){ userEmail = saved; push("s2"); } })();
 
 window.__app = { state:state, ui:ui, stack:stack, isInvoice:isInvoice, findAmount:findAmount, amountFromText:amountFromText, amountFromPdf:amountFromPdf, autoCat:autoCat, rateFor:rateFor, buildPrint:buildPrint, makePdf:makePdf, supplierOf:supplierOf, typeOf:typeOf };
 })();
