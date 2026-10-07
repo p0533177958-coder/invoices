@@ -463,6 +463,56 @@ body.print-preview #printArea{display:block;max-width:760px;margin:0 auto;paddin
 #printArea tfoot td{font-weight:800;font-size:13.5px;background:#EEF1F5 !important;border-top:2px solid #111;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 #printArea .pn{font-size:11px;color:#555;margin-top:10px;line-height:1.5}
 
+/* ---------- דשבורד מנהל ---------- */
+.admin-open{
+  width:100%;display:flex;align-items:center;gap:10px;padding:13px 14px;margin-bottom:14px;border-radius:15px;
+  border:1.5px solid color-mix(in srgb,var(--acc-1) 45%,var(--line));background:color-mix(in srgb,var(--acc-1) 9%,var(--surface-2));
+  font-size:15px;font-weight:800;text-align:right;transition:transform .2s var(--spring);
+}
+.admin-open:active{transform:scale(.97)}
+.admin-open svg{width:19px;height:19px;stroke:var(--acc-1);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.admin-open span{flex:1}
+.admin-open em{font-style:normal;font-size:12.5px;color:var(--muted);font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);padding:12px 10px;box-shadow:var(--card-shadow)}
+.stat b{display:block;font-size:24px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{font-size:12.5px;color:var(--muted);font-weight:600}
+.stat.warn b{color:var(--warn)}
+.quota{height:6px;border-radius:99px;background:var(--surface-3);overflow:hidden;margin:-4px 2px 16px}
+.quota i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--acc-2),var(--acc-1))}
+.urow{
+  display:flex;align-items:center;gap:12px;padding:12px 13px;margin-bottom:8px;
+  border-radius:var(--r-md);background:var(--surface);border:1.5px solid var(--line);
+}
+.urow .av{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:16px;flex:none;
+  background:color-mix(in srgb,var(--c) 18%,transparent);color:var(--c)}
+.urow .body{flex:1;min-width:0}
+.urow .nm{display:flex;align-items:center;gap:7px;min-width:0}
+.urow .nm b{font-size:15.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.urow .em{font-size:13px;color:var(--muted);direction:ltr;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.urow .since{font-size:11.5px;color:var(--faint);margin-top:2px}
+.urow .acts{display:flex;gap:6px;flex:none}
+.mini{width:34px;height:34px;border-radius:11px;border:1px solid var(--line);background:var(--surface-2);display:grid;place-items:center;transition:transform .2s var(--spring)}
+.mini:active{transform:scale(.88)}
+.mini svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.pending-box{
+  margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px;color:var(--warn);font-weight:700;
+}
+.pending-box button{border:1px solid color-mix(in srgb,var(--warn) 45%,transparent);background:color-mix(in srgb,var(--warn) 10%,transparent);color:var(--warn);
+  font-size:12px;font-weight:800;padding:4px 10px;border-radius:999px}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.field span{font-size:13px;color:var(--muted);font-weight:700;padding-inline-start:4px}
+.field input[type=text], .field input[type=email]{
+  height:50px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface-2);padding:0 13px;font-size:16px;width:100%;
+}
+.field input[type=email]{direction:ltr;text-align:left}
+.field input:focus{outline:none;border-color:var(--acc-1);box-shadow:0 0 0 3px color-mix(in srgb,var(--acc-1) 16%,transparent)}
+.check{display:flex;align-items:flex-start;gap:10px;font-size:14px;line-height:1.45;color:var(--muted);padding:4px 4px 0;cursor:pointer}
+.check input{width:19px;height:19px;accent-color:var(--acc-1);flex:none;margin:1px 0 0}
+.steps{margin:0;padding:0 20px 0 0;font-size:14px;line-height:1.7;color:var(--muted)}
+.steps b{color:var(--text)}
+.danger{color:var(--k4) !important;border-color:color-mix(in srgb,var(--k4) 45%,var(--line)) !important}
+
 @media (prefers-reduced-motion:reduce){ *{animation-duration:.01ms !important;transition-duration:.01ms !important} }
 </style>
 </head>
@@ -522,6 +572,7 @@ body.print-preview #printArea{display:block;max-width:760px;margin:0 auto;paddin
       <span class="tchip" style="--c:var(--t-shop)"><i></i>הזמנות מחנויות</span>
     </div>
     <button class="main-btn" id="scanBtn"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>סרוק את המייל</button>
+    <button class="admin-open" id="adminEntry" style="display:none;margin-top:14px"></button>
   </section>
 
   <!-- מסך 3: סריקה ותוצאות -->
@@ -545,6 +596,21 @@ body.print-preview #printArea{display:block;max-width:760px;margin:0 auto;paddin
       <div id="list"></div>
       <div id="table" style="display:none"></div>
     </div>
+  </section>
+
+  <!-- מסך 4: ניהול משתמשים (מנהל בלבד) -->
+  <section class="screen" id="s4">
+    <div class="stats">
+      <div class="stat"><b id="stTotal">0</b><span>משתמשים</span></div>
+      <div class="stat" id="stPendBox"><b id="stPending">0</b><span>ממתינים לגוגל</span></div>
+      <div class="stat"><b id="stLeft">100</b><span>מקומות פנויים</span></div>
+    </div>
+    <div class="quota"><i id="quotaBar" style="width:0"></i></div>
+    <button class="main-btn" id="addUserBtn" style="margin:0 0 18px"><svg viewBox="0 0 24 24"><circle cx="10" cy="8" r="4"/><path d="M3 21a7 7 0 0 1 14 0M19 8v6M16 11h6"/></svg>הוסף משתמש</button>
+    <div class="label">כל המשתמשים</div>
+    <div id="userList"></div>
+    <div class="tbl-note" style="margin-top:14px"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>
+      <span>הרשימה נשמרת במכשיר הזה בלבד. החשבוניות של כל משתמש נקראות ונשארות בטלפון שלו, ולכן לא מוצגות כאן.</span></div>
   </section>
 </div>
 
@@ -582,6 +648,26 @@ body.print-preview #printArea{display:block;max-width:760px;margin:0 auto;paddin
   <div id="acctBox"></div>
   <div class="section-t">מראה</div>
   <div class="themes" id="themes"></div>
+</div>
+
+<div class="sheet" id="addUserSheet">
+  <div class="grab"></div>
+  <h3>משתמש חדש</h3>
+  <p class="sub">אחרי השמירה ייפתח Google Cloud, והמייל כבר יהיה מועתק. שם: <b>Add users</b> ← הדבק ← <b>Save</b>.</p>
+  <label class="field"><span>שם</span><input type="text" id="auName" placeholder="למשל: אבא" autocomplete="off"></label>
+  <label class="field"><span>כתובת Gmail</span><input type="email" id="auEmail" placeholder="name@gmail.com" autocomplete="off" inputmode="email"></label>
+  <label class="check"><input type="checkbox" id="auDone"><span>המשתמש כבר נוסף ב-Google Cloud (רק לרשום אותו כאן)</span></label>
+  <div class="sheet-actions">
+    <button class="ghost-btn" data-close>ביטול</button>
+    <button class="main-btn" id="auOk">שמור</button>
+  </div>
+</div>
+
+<div class="sheet" id="userSheet">
+  <div class="grab"></div>
+  <h3 id="usTitle"></h3>
+  <p class="sub" id="usSub" style="direction:ltr;text-align:right"></p>
+  <div id="usBody"></div>
 </div>
 
 <div class="sheet" id="progressSheet">
@@ -1057,12 +1143,14 @@ function show(id, dir){
   });
   updateBar(id);
   $("#dock").classList.toggle("on", id === "s3" && ui.items && !ui.scanning);
+  if(id === "s2") renderAdminEntry();
+  if(id === "s4"){ if(isAdmin()) renderAdmin(); else setTimeout(function(){ goToDepth(1, "back"); }, 0); }
   window.scrollTo(0, 0);
 }
 function updateBar(id){
   var tb = $("#topbar");
   tb.classList.toggle("has-back", stack.length > 1 && id !== "s2");
-  $("#barTitle").textContent = id === "s3" ? rangeLabel() : "שולף החשבוניות";
+  $("#barTitle").textContent = id === "s3" ? rangeLabel() : id === "s4" ? "ניהול משתמשים" : "שולף החשבוניות";
   $("#barSub").textContent = id === "s1" ? "" : userEmail;
   tb.style.visibility = id === "s1" ? "hidden" : "visible";
 }
@@ -1584,8 +1672,11 @@ $("#doneOk").onclick = hideDone;
    הגדרות
    ============================================================ */
 $("#settingsBtn").onclick = function(){
-  $("#acctBox").innerHTML = userEmail ?
-    '<div class="acct"><div class="av">' + esc(userEmail.charAt(0).toUpperCase()) + '</div><div class="who">' + esc(userEmail) + '</div><button id="switchBtn">החלף חשבון</button><button id="logoutBtn">התנתק</button></div>' : "";
+  $("#acctBox").innerHTML = (userEmail ?
+    '<div class="acct"><div class="av">' + esc(userEmail.charAt(0).toUpperCase()) + '</div><div class="who">' + esc(userEmail) + '</div><button id="switchBtn">החלף חשבון</button><button id="logoutBtn">התנתק</button></div>' : "") +
+    (isAdmin() ? '<button class="admin-open" id="adminBtn">' + adminEntryHtml() + '</button>' : "");
+  var ab = $("#adminBtn");
+  if(ab) ab.onclick = function(){ closeSheets(); if(current() !== "s4") push("s4"); renderAdmin(); };
   var sb = $("#switchBtn");
   if(sb) sb.onclick = function(){
     Api.login(true).then(function(email){
@@ -1604,6 +1695,163 @@ $("#settingsBtn").onclick = function(){
   renderThemes();
   showSheet("#settingsSheet");
 };
+
+/* ============================================================
+   ניהול משתמשים (מנהל בלבד)
+   אין שרת: הרשימה נשמרת רק במכשיר של המנהל (מפתח ADMIN_KEY).
+   הגישה בפועל נקבעת ב-Google Cloud (Test users) — הכפתור מעתיק את המייל ופותח את הדף.
+   המיילים של בני המשפחה לא נכתבים בקוד, כי המאגר ציבורי.
+   ============================================================ */
+var ADMINS = ["p0533177958@gmail.com"];
+var ADMIN_KEY = "invoices_admin_v1";
+var APP_URL = "https://p0533177958-coder.github.io/invoices/";
+var CONSOLE_URL = "https://console.cloud.google.com/auth/audience?project=invoices-finder&authuser=" + encodeURIComponent(ADMINS[0]);
+var USER_LIMIT = 100;
+var AV_COLORS = ["var(--k1)","var(--k2)","var(--k3)","var(--k4)","var(--k5)","var(--k6)"];
+var ICON_USERS = '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M16 4a4 4 0 0 1 0 8M22 21a7 7 0 0 0-4-6.3"/></svg>';
+var ICON_SEND = '<svg viewBox="0 0 24 24"><path d="M21 3L10 14M21 3l-7 18-4-7-7-4z"/></svg>';
+var ICON_MORE = '<svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="12" cy="19" r="1.3"/></svg>';
+
+function isAdmin(){
+  var me = (userEmail || "").toLowerCase();
+  return !!me && ADMINS.some(function(a){ return a.toLowerCase() === me; });
+}
+function adminLoad(){
+  var d = null;
+  try{ d = JSON.parse(localStorage.getItem(ADMIN_KEY) || "null"); }catch(e){}
+  if(!d || !Array.isArray(d.users)) d = { version:1, users:[] };
+  if(!d.users.some(function(u){ return u.email === ADMINS[0]; }))
+    d.users.unshift({ name:"אני (מנהל)", email:ADMINS[0], added:iso(new Date()), google:true, admin:true });
+  return d;
+}
+var admin = null;
+function adminUsers(){ if(!admin) admin = adminLoad(); return admin.users; }
+function adminSave(){ try{ localStorage.setItem(ADMIN_KEY, JSON.stringify(admin)); }catch(e){ toast("השמירה במכשיר נכשלה"); } }
+function findUser(email){ return adminUsers().filter(function(u){ return u.email === email; })[0]; }
+function avColor(email){ var h = 0; for(var i = 0; i < email.length; i++) h = (h * 31 + email.charCodeAt(i)) >>> 0; return AV_COLORS[h % AV_COLORS.length]; }
+
+function renderAdmin(){
+  var us = adminUsers();
+  var pend = us.filter(function(u){ return !u.google; }).length;
+  $("#stTotal").textContent = us.length;
+  $("#stPending").textContent = pend;
+  $("#stPendBox").classList.toggle("warn", pend > 0);
+  $("#stLeft").textContent = Math.max(0, USER_LIMIT - us.length);
+  $("#quotaBar").style.width = Math.min(100, us.length / USER_LIMIT * 100) + "%";
+  $("#userList").innerHTML = us.map(function(u){
+    return '<div class="urow" style="--c:' + avColor(u.email) + '">' +
+      '<div class="av">' + esc((u.name || u.email).charAt(0).toUpperCase()) + '</div>' +
+      '<div class="body">' +
+        '<div class="nm"><b>' + esc(u.name || u.email.split("@")[0]) + '</b>' + (u.admin ? '<span class="tag" style="--c:var(--acc-1)">מנהל</span>' : "") + '</div>' +
+        '<div class="em">' + esc(u.email) + '</div>' +
+        '<div class="since">נוסף ' + heDate(u.added) + '</div>' +
+        (u.google ? "" : '<div class="pending-box">ממתין להוספה ב-Google <button data-g="' + esc(u.email) + '">כבר הוספתי ✓</button></div>') +
+      '</div>' +
+      '<div class="acts">' +
+        (u.admin ? "" : '<button class="mini" data-inv="' + esc(u.email) + '" aria-label="שלח הזמנה">' + ICON_SEND + '</button>') +
+        '<button class="mini" data-more="' + esc(u.email) + '" aria-label="אפשרויות">' + ICON_MORE + '</button>' +
+      '</div></div>';
+  }).join("");
+  $$("#userList [data-g]").forEach(function(b){ b.onclick = function(){ markGoogle(b.dataset.g); }; });
+  $$("#userList [data-inv]").forEach(function(b){ b.onclick = function(){ invite(findUser(b.dataset.inv)); }; });
+  $$("#userList [data-more]").forEach(function(b){ b.onclick = function(){ openUser(b.dataset.more); }; });
+}
+
+function renderAdminEntry(){
+  var b = $("#adminEntry");
+  if(!isAdmin()){ b.style.display = "none"; return; }
+  b.innerHTML = adminEntryHtml();
+  b.style.display = "flex";
+}
+/* תוכן כפתור הכניסה, זהה במסך התקופה ובהגדרות */
+function adminEntryHtml(){
+  var pend = adminUsers().filter(function(u){ return !u.google; }).length;
+  return ICON_USERS + '<span>ניהול משתמשים</span><em>' + adminUsers().length + ' משתמשים' + (pend ? ' · ' + pend + ' ממתינים' : '') + '</em>';
+}
+$("#adminEntry").onclick = function(){ push("s4"); };
+
+function markGoogle(email){
+  var u = findUser(email); if(!u) return;
+  u.google = true; adminSave(); renderAdmin();
+  toast((u.name || email) + " יכול להתחבר עכשיו");
+}
+
+/* מעתיק את המייל ופותח את Google Cloud. חייב לרוץ ישירות מלחיצה, אחרת החלון נחסם */
+function openConsole(email){
+  var cp = null;
+  try{ if(navigator.clipboard) cp = navigator.clipboard.writeText(email); }catch(e){}
+  window.open(CONSOLE_URL, "_blank", "noopener");
+  function fail(){ toast("הוסף ב-Google את: " + email); }
+  if(cp) cp.then(function(){ toast("המייל הועתק. ב-Google: Add users ← הדבק ← Save"); }, fail); else fail();
+}
+
+function invite(u){
+  if(!u) return;
+  var text = "היי" + (u.name && !u.admin ? " " + u.name : "") + ", הוספתי אותך לשולף החשבוניות.\n" +
+    "נכנסים מכאן עם " + u.email + ":\n" + APP_URL + "\n" +
+    "אם גוגל כותבת שהאפליקציה לא מאומתת: לוחצים Continue.";
+  if(navigator.share){
+    navigator.share({ title:"שולף החשבוניות", text:text }).catch(function(){});
+  } else {
+    window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank", "noopener");
+  }
+}
+
+$("#addUserBtn").onclick = function(){
+  $("#auName").value = ""; $("#auEmail").value = ""; $("#auDone").checked = false;
+  showSheet("#addUserSheet");
+  setTimeout(function(){ $("#auName").focus(); }, 350);
+};
+$("#auOk").onclick = function(){
+  var name = $("#auName").value.trim();
+  var email = $("#auEmail").value.trim().toLowerCase();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ toast("כתובת המייל לא תקינה"); $("#auEmail").focus(); return; }
+  if(findUser(email)){ toast("המשתמש הזה כבר ברשימה"); return; }
+  if(adminUsers().length >= USER_LIMIT){ toast("הגעת למגבלה של " + USER_LIMIT + " משתמשים"); return; }
+  var done = $("#auDone").checked;
+  adminUsers().push({ name:name, email:email, added:iso(new Date()), google:done });
+  adminSave();
+  closeSheets();
+  renderAdmin();
+  if(done) toast((name || email) + " נוסף לרשימה");
+  else openConsole(email);
+};
+$("#auEmail").addEventListener("keydown", function(e){ if(e.key === "Enter") $("#auOk").click(); });
+
+function openUser(email){
+  var u = findUser(email); if(!u) return;
+  $("#usTitle").textContent = u.name || email.split("@")[0];
+  $("#usSub").textContent = email;
+  var h = '<div style="display:grid;gap:9px">';
+  if(!u.admin) h += '<button class="ghost-btn" id="usInvite">שלח הזמנה</button>';
+  if(!u.google) h += '<button class="main-btn" style="margin:0;height:50px;font-size:15.5px" id="usGoogle">פתח את Google Cloud להוספה</button>' +
+                     '<button class="ghost-btn" id="usMark">כבר הוספתי ב-Google ✓</button>';
+  h += '<button class="ghost-btn" id="usRename">שנה שם</button>';
+  if(!u.admin) h += '<button class="ghost-btn danger" id="usDel">הסר מהרשימה</button>';
+  h += '</div>';
+  $("#usBody").innerHTML = h;
+  var b;
+  if((b = $("#usInvite"))) b.onclick = function(){ invite(u); };
+  if((b = $("#usGoogle"))) b.onclick = function(){ openConsole(email); };
+  if((b = $("#usMark"))) b.onclick = function(){ closeSheets(); markGoogle(email); };
+  $("#usRename").onclick = function(){
+    $("#usBody").innerHTML = '<label class="field"><span>שם</span><input type="text" id="usName" autocomplete="off"></label>' +
+      '<div class="sheet-actions" style="margin-top:6px"><button class="ghost-btn" data-close2>ביטול</button><button class="main-btn" id="usNameOk">שמור</button></div>';
+    $("#usName").value = u.name || ""; $("#usName").focus();
+    $("[data-close2]").onclick = dismissSheets;
+    $("#usNameOk").onclick = function(){ u.name = $("#usName").value.trim(); adminSave(); closeSheets(); renderAdmin(); };
+  };
+  if((b = $("#usDel"))){
+    var armed = false;
+    b.onclick = function(){
+      if(!armed){ armed = true; b.textContent = "לחץ שוב כדי להסיר"; setTimeout(function(){ armed = false; b.textContent = "הסר מהרשימה"; }, 3500); return; }
+      admin.users = admin.users.filter(function(x){ return x.email !== email; });
+      adminSave(); closeSheets(); renderAdmin();
+      toast("הוסר מהרשימה. כדי לחסום את הגישה, הסר אותו גם ב-Google Cloud");
+    };
+  }
+  showSheet("#userSheet");
+}
 
 /* ---------- init ---------- */
 applyTheme(state.theme);
